@@ -1,0 +1,11 @@
+torch~=2.5.1+cu124
+tqdm~=4.67.1
+transformers~=4.46.3
+ollama~=0.4.8
+pandas~=2.2.3
+openpyxl~=3.1.5
+umap-learn~=0.5.7
+bertopic~=0.16.4
+hdbscan~=0.8.40
+sentence-transformers~=3.3.1
+scikit-learn~=1.5.2

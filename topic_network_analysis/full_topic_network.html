@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"font": {"color": "white"}, "group": 0, "id": "embedding_0", "keywords": "learning, based, using, high, performance, proposed, novel, data, embedded, ai, model, deep, neural, accuracy, network", "label": "Embedding T-0", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eEmbedding T-0\u003c/b\u003e\u003cbr\u003e\n        Keywords: learning, based, using, high, performance, proposed, novel, data, embedded, ai, model, deep, neural, accuracy, network\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "copilot_0", "keywords": "ai, human, human ai, humans, systems, collaboration, team, performance, decision, teams, trust, making, decision making, intelligence, ai collaboration", "label": "Copilot T-0", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eCopilot T-0\u003c/b\u003e\u003cbr\u003e\n        Keywords: ai, human, human ai, humans, systems, collaboration, team, performance, decision, teams, trust, making, decision making, intelligence, ai collaboration\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "copilot_1", "keywords": "code, ai, copilot, tools, language, models, software, github, programming, github copilot, generative, generative ai, large, development, like", "label": "Copilot T-1", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eCopilot T-1\u003c/b\u003e\u003cbr\u003e\n        Keywords: code, ai, copilot, tools, language, models, software, github, programming, github copilot, generative, generative ai, large, development, like\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_0", "keywords": "human, agent, agents, ai, systems, team, teams, design, multi, multi agent, based, humans, performance, trust, human ai", "label": "Agent T-0", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-0\u003c/b\u003e\u003cbr\u003e\n        Keywords: human, agent, agents, ai, systems, team, teams, design, multi, multi agent, based, humans, performance, trust, human ai\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_1", "keywords": "learning, reinforcement, reinforcement learning, agent, agents, multi, multi agent, games, game, using, cooperative, team, novel, performance, learn", "label": "Agent T-1", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-1\u003c/b\u003e\u003cbr\u003e\n        Keywords: learning, reinforcement, reinforcement learning, agent, agents, multi, multi agent, games, game, using, cooperative, team, novel, performance, learn\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_2", "keywords": "soccer, robocup, team, simulation, robot, robotic, robotic soccer, agent, league, multi, robots, multi agent, robot soccer, development, agents", "label": "Agent T-2", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-2\u003c/b\u003e\u003cbr\u003e\n        Keywords: soccer, robocup, team, simulation, robot, robotic, robotic soccer, agent, league, multi, robots, multi agent, robot soccer, development, agents\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_3", "keywords": "robots, control, multi, robot, mobile, using, agent, systems, multi agent, based, distributed, cooperative, team, consensus, time", "label": "Agent T-3", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-3\u003c/b\u003e\u003cbr\u003e\n        Keywords: robots, control, multi, robot, mobile, using, agent, systems, multi agent, based, distributed, cooperative, team, consensus, time\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_4", "keywords": "conversational, language, ai, human, agents, conversational agents, user, models, language models, human ai, users, large language, large language models, chatbots, interactions", "label": "Agent T-4", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-4\u003c/b\u003e\u003cbr\u003e\n        Keywords: conversational, language, ai, human, agents, conversational agents, user, models, language models, human ai, users, large language, large language models, chatbots, interactions\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_5", "keywords": "rescue, agent, medical, emergency, patient, treatment, simulation, healthcare, based, improve, multi, multi agent, data, ai, disaster", "label": "Agent T-5", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-5\u003c/b\u003e\u003cbr\u003e\n        Keywords: rescue, agent, medical, emergency, patient, treatment, simulation, healthcare, based, improve, multi, multi agent, data, ai, disaster\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_6", "keywords": "virtual, learning, training, students, collaborative, intelligent, support, agents, pedagogical, environment, educational, team, education, student, based", "label": "Agent T-6", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-6\u003c/b\u003e\u003cbr\u003e\n        Keywords: virtual, learning, training, students, collaborative, intelligent, support, agents, pedagogical, environment, educational, team, education, student, based\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 0, "id": "agent_7", "keywords": "unmanned, vehicles, aerial, unmanned aerial, uavs, aerial vehicles, based, agent, control, uav, unmanned aerial vehicles, team, multi, ground, vehicles uavs", "label": "Agent T-7", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-7\u003c/b\u003e\u003cbr\u003e\n        Keywords: unmanned, vehicles, aerial, unmanned aerial, uavs, aerial vehicles, based, agent, control, uav, unmanned aerial vehicles, team, multi, ground, vehicles uavs\u003cbr\u003e\n        Degree Centrality: 0.909\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.909\n        "}, {"font": {"color": "white"}, "group": 1, "id": "embedding_1", "keywords": "group, algebra, embedding, spaces, certain, finite, conditions, subgroup, existence, groups, sobolev, lie, space, compact, embedded", "label": "Embedding T-1", "shape": "dot", "size": 10.0, "title": "\n        \u003cb\u003eEmbedding T-1\u003c/b\u003e\u003cbr\u003e\n        Keywords: group, algebra, embedding, spaces, certain, finite, conditions, subgroup, existence, groups, sobolev, lie, space, compact, embedded\u003cbr\u003e\n        Degree Centrality: 0.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 0.000\n        "}]);
+                  edges = new vis.DataSet([{"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.64", "to": "copilot_0", "width": 0.6363417221082559}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.52", "to": "copilot_1", "width": 0.5245298367649858}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.47", "to": "agent_0", "width": 0.47313006319503914}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.41", "to": "agent_1", "width": 0.4084762599343194}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.48", "to": "agent_2", "width": 0.4816690356514887}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.32", "to": "agent_3", "width": 0.32409250958622515}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.32", "to": "agent_4", "width": 0.3199202584675469}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.47", "to": "agent_5", "width": 0.46654937434977395}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.51", "to": "agent_6", "width": 0.5071557792790431}, {"color": "purple", "dashes": true, "from": "embedding_0", "title": "Cross-Mode Similarity: 0.32", "to": "agent_7", "width": 0.3211014578467887}, {"from": "copilot_0", "title": "Similarity: 0.78", "to": "copilot_1", "width": 0.776210280443655}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.69", "to": "agent_0", "width": 0.6931597519962589}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.65", "to": "agent_1", "width": 0.6452178264724624}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.52", "to": "agent_2", "width": 0.5213286556253316}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.46", "to": "agent_3", "width": 0.4560313913310431}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.40", "to": "agent_4", "width": 0.401837660242098}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.80", "to": "agent_5", "width": 0.8045287958436297}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.74", "to": "agent_6", "width": 0.7356244165422648}, {"color": "purple", "dashes": true, "from": "copilot_0", "title": "Cross-Mode Similarity: 0.57", "to": "agent_7", "width": 0.5748016728108177}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.87", "to": "agent_0", "width": 0.86700748306987}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.89", "to": "agent_1", "width": 0.8906765740417515}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.72", "to": "agent_2", "width": 0.7161141800494109}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.65", "to": "agent_3", "width": 0.6520861043255322}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.61", "to": "agent_4", "width": 0.6065746739288647}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.77", "to": "agent_5", "width": 0.7693214841310134}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.64", "to": "agent_6", "width": 0.6416777366575215}, {"color": "purple", "dashes": true, "from": "copilot_1", "title": "Cross-Mode Similarity: 0.64", "to": "agent_7", "width": 0.6355669350147646}, {"from": "agent_0", "title": "Similarity: 0.97", "to": "agent_1", "width": 0.9737782400597952}, {"from": "agent_0", "title": "Similarity: 0.83", "to": "agent_2", "width": 0.8286367355413778}, {"from": "agent_0", "title": "Similarity: 0.74", "to": "agent_3", "width": 0.7425095617167936}, {"from": "agent_0", "title": "Similarity: 0.76", "to": "agent_4", "width": 0.7605978646136871}, {"from": "agent_0", "title": "Similarity: 0.76", "to": "agent_5", "width": 0.7639658083547167}, {"from": "agent_0", "title": "Similarity: 0.75", "to": "agent_6", "width": 0.7472618859380209}, {"from": "agent_0", "title": "Similarity: 0.75", "to": "agent_7", "width": 0.7457713058153004}, {"from": "agent_1", "title": "Similarity: 0.79", "to": "agent_2", "width": 0.7906871160330682}, {"from": "agent_1", "title": "Similarity: 0.73", "to": "agent_3", "width": 0.7251795613205305}, {"from": "agent_1", "title": "Similarity: 0.77", "to": "agent_4", "width": 0.7654738091122714}, {"from": "agent_1", "title": "Similarity: 0.71", "to": "agent_5", "width": 0.712456800606269}, {"from": "agent_1", "title": "Similarity: 0.70", "to": "agent_6", "width": 0.7019615027187096}, {"from": "agent_1", "title": "Similarity: 0.69", "to": "agent_7", "width": 0.6930912021021524}, {"from": "agent_2", "title": "Similarity: 0.77", "to": "agent_3", "width": 0.7734766868997859}, {"from": "agent_2", "title": "Similarity: 0.73", "to": "agent_4", "width": 0.7275298143410966}, {"from": "agent_2", "title": "Similarity: 0.55", "to": "agent_5", "width": 0.5547888227549183}, {"from": "agent_2", "title": "Similarity: 0.63", "to": "agent_6", "width": 0.6279587585827493}, {"from": "agent_2", "title": "Similarity: 0.64", "to": "agent_7", "width": 0.6425554904775734}, {"from": "agent_3", "title": "Similarity: 0.74", "to": "agent_4", "width": 0.7363025889509062}, {"from": "agent_3", "title": "Similarity: 0.48", "to": "agent_5", "width": 0.48411129212694726}, {"from": "agent_3", "title": "Similarity: 0.53", "to": "agent_6", "width": 0.5327199482395659}, {"from": "agent_3", "title": "Similarity: 0.56", "to": "agent_7", "width": 0.5596726928035093}, {"from": "agent_4", "title": "Similarity: 0.42", "to": "agent_5", "width": 0.4222959445228007}, {"from": "agent_4", "title": "Similarity: 0.57", "to": "agent_6", "width": 0.5698606330964509}, {"from": "agent_4", "title": "Similarity: 0.45", "to": "agent_7", "width": 0.4534388789577021}, {"from": "agent_5", "title": "Similarity: 0.57", "to": "agent_6", "width": 0.5651253664538767}, {"from": "agent_5", "title": "Similarity: 0.65", "to": "agent_7", "width": 0.652230723502504}, {"from": "agent_6", "title": "Similarity: 0.55", "to": "agent_7", "width": 0.5468846271262102}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"nodes": {"borderWidth": 1, "borderWidthSelected": 2, "font": {"size": 16, "face": "arial"}}, "edges": {"color": {"inherit": true}, "smooth": {"type": "continuous"}}, "physics": {"barnesHut": {"gravitationalConstant": -5000, "centralGravity": 0.1, "springLength": 150, "springConstant": 0.01, "damping": 0.09}, "minVelocity": 0.75}, "interaction": {"hover": true, "tooltipDelay": 200}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

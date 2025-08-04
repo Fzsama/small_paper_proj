@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #dddddd;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"font": {"color": "black"}, "group": 0, "id": "agent_0", "keywords": "team, agent, teams, performance, human, agents, dynamic, task, multi, based, multi agent, teamwork, environments, teaming, systems", "label": "Agent T-0", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-0\u003c/b\u003e\u003cbr\u003e\n        Keywords: team, agent, teams, performance, human, agents, dynamic, task, multi, based, multi agent, teamwork, environments, teaming, systems\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_1", "keywords": "learning, reinforcement, reinforcement learning, agent, multi, multi agent, cooperative, agents, effectively, team, agent reinforcement learning, multi agent reinforcement, agent reinforcement, games, performance", "label": "Agent T-1", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-1\u003c/b\u003e\u003cbr\u003e\n        Keywords: learning, reinforcement, reinforcement learning, agent, multi, multi agent, cooperative, agents, effectively, team, agent reinforcement learning, multi agent reinforcement, agent reinforcement, games, performance\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_2", "keywords": "soccer, robocup, robot, team, robot soccer, robotic, robotic soccer, agent, multi, performance, behavior, simulation, autonomous, strategies, effectively", "label": "Agent T-2", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-2\u003c/b\u003e\u003cbr\u003e\n        Keywords: soccer, robocup, robot, team, robot soccer, robotic, robotic soccer, agent, multi, performance, behavior, simulation, autonomous, strategies, effectively\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_3", "keywords": "control, robot, multi, multi robot, robots, agent, multi agent, cooperative, environments, based, distributed, mobile, time, teams, robotic", "label": "Agent T-3", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-3\u003c/b\u003e\u003cbr\u003e\n        Keywords: control, robot, multi, multi robot, robots, agent, multi agent, cooperative, environments, based, distributed, mobile, time, teams, robotic\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_4", "keywords": "design, engineering, agent, based, agent based, distributed, knowledge, software, product, development, multi, processes, teams, collaborative, systems", "label": "Agent T-4", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-4\u003c/b\u003e\u003cbr\u003e\n        Keywords: design, engineering, agent, based, agent based, distributed, knowledge, software, product, development, multi, processes, teams, collaborative, systems\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_5", "keywords": "ai, patient, medical, emergency, cancer, based, treatment, disaster, agent, improve, data, simulation, patients, decision, clinical", "label": "Agent T-5", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-5\u003c/b\u003e\u003cbr\u003e\n        Keywords: ai, patient, medical, emergency, cancer, based, treatment, disaster, agent, improve, data, simulation, patients, decision, clinical\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_6", "keywords": "ai, trust, human, transparency, particularly, trust ai, human ai, human trust, reliance, influence, user, agents, significantly, ai agents, calibration", "label": "Agent T-6", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-6\u003c/b\u003e\u003cbr\u003e\n        Keywords: ai, trust, human, transparency, particularly, trust ai, human ai, human trust, reliance, influence, user, agents, significantly, ai agents, calibration\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_7", "keywords": "learning, student, virtual, collaborative, pedagogical, intelligent, collaborative learning, students, tutoring, agent, agents, environment, facilitate, ai, support", "label": "Agent T-7", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-7\u003c/b\u003e\u003cbr\u003e\n        Keywords: learning, student, virtual, collaborative, pedagogical, intelligent, collaborative learning, students, tutoring, agent, agents, environment, facilitate, ai, support\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_8", "keywords": "conversational, ai, language, user, human, conversational ai, conversational agents, models, language models, interactions, agents, large language, large, natural, large language models", "label": "Agent T-8", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-8\u003c/b\u003e\u003cbr\u003e\n        Keywords: conversational, ai, language, user, human, conversational ai, conversational agents, models, language models, interactions, agents, large language, large, natural, large language models\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_9", "keywords": "ai, design, creative, human, human ai, creativity, human ai collaboration, ai collaboration, creation, collaboration, generative, interaction, user, ai creative, ai agents", "label": "Agent T-9", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-9\u003c/b\u003e\u003cbr\u003e\n        Keywords: ai, design, creative, human, human ai, creativity, human ai collaboration, ai collaboration, creation, collaboration, generative, interaction, user, ai creative, ai agents\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}, {"font": {"color": "black"}, "group": 0, "id": "agent_10", "keywords": "ai, human, human ai, collaboration, ai collaboration, human ai collaboration, intelligence, systems, interaction, humans, ai systems, machine, social, ai interaction, understanding", "label": "Agent T-10", "shape": "dot", "size": 10, "title": "\n        \u003cb\u003eAgent T-10\u003c/b\u003e\u003cbr\u003e\n        Keywords: ai, human, human ai, collaboration, ai collaboration, human ai collaboration, intelligence, systems, interaction, humans, ai systems, machine, social, ai interaction, understanding\u003cbr\u003e\n        Degree Centrality: 1.000\u003cbr\u003e\n        Betweenness Centrality: 0.000\u003cbr\u003e\n        Closeness Centrality: 1.000\n        "}]);
+                  edges = new vis.DataSet([{"from": "agent_0", "title": "Similarity: 0.93", "to": "agent_1", "width": 0.9271923910629956}, {"from": "agent_0", "title": "Similarity: 0.83", "to": "agent_2", "width": 0.8282319680368397}, {"from": "agent_0", "title": "Similarity: 0.74", "to": "agent_3", "width": 0.738139497135041}, {"from": "agent_0", "title": "Similarity: 0.79", "to": "agent_4", "width": 0.7927058256541604}, {"from": "agent_0", "title": "Similarity: 0.83", "to": "agent_5", "width": 0.8343587243534496}, {"from": "agent_0", "title": "Similarity: 0.69", "to": "agent_6", "width": 0.6920433274718742}, {"from": "agent_0", "title": "Similarity: 0.74", "to": "agent_7", "width": 0.7411954400050016}, {"from": "agent_0", "title": "Similarity: 0.72", "to": "agent_8", "width": 0.7211476528632541}, {"from": "agent_0", "title": "Similarity: 0.69", "to": "agent_9", "width": 0.6897980532003277}, {"from": "agent_0", "title": "Similarity: 0.68", "to": "agent_10", "width": 0.6754896830054209}, {"from": "agent_1", "title": "Similarity: 0.77", "to": "agent_2", "width": 0.7720095902245852}, {"from": "agent_1", "title": "Similarity: 0.71", "to": "agent_3", "width": 0.71405363411365}, {"from": "agent_1", "title": "Similarity: 0.78", "to": "agent_4", "width": 0.7833102308191715}, {"from": "agent_1", "title": "Similarity: 0.79", "to": "agent_5", "width": 0.7947436629183131}, {"from": "agent_1", "title": "Similarity: 0.57", "to": "agent_6", "width": 0.5724823279259784}, {"from": "agent_1", "title": "Similarity: 0.60", "to": "agent_7", "width": 0.6012842190519054}, {"from": "agent_1", "title": "Similarity: 0.61", "to": "agent_8", "width": 0.6127096275493161}, {"from": "agent_1", "title": "Similarity: 0.54", "to": "agent_9", "width": 0.5424210214677989}, {"from": "agent_1", "title": "Similarity: 0.54", "to": "agent_10", "width": 0.5418364485700955}, {"from": "agent_2", "title": "Similarity: 0.74", "to": "agent_3", "width": 0.7389497086308328}, {"from": "agent_2", "title": "Similarity: 0.73", "to": "agent_4", "width": 0.733750470593656}, {"from": "agent_2", "title": "Similarity: 0.59", "to": "agent_5", "width": 0.5917430313755319}, {"from": "agent_2", "title": "Similarity: 0.54", "to": "agent_6", "width": 0.5437561764412245}, {"from": "agent_2", "title": "Similarity: 0.55", "to": "agent_7", "width": 0.5516465202158306}, {"from": "agent_2", "title": "Similarity: 0.63", "to": "agent_8", "width": 0.6334349054643601}, {"from": "agent_2", "title": "Similarity: 0.48", "to": "agent_9", "width": 0.48266037881527113}, {"from": "agent_2", "title": "Similarity: 0.48", "to": "agent_10", "width": 0.4791298694551931}, {"from": "agent_3", "title": "Similarity: 0.74", "to": "agent_4", "width": 0.7391376026966191}, {"from": "agent_3", "title": "Similarity: 0.51", "to": "agent_5", "width": 0.5118747580656129}, {"from": "agent_3", "title": "Similarity: 0.45", "to": "agent_6", "width": 0.4451434911534786}, {"from": "agent_3", "title": "Similarity: 0.45", "to": "agent_7", "width": 0.454265749883063}, {"from": "agent_3", "title": "Similarity: 0.53", "to": "agent_8", "width": 0.5257046402506584}, {"from": "agent_3", "title": "Similarity: 0.41", "to": "agent_9", "width": 0.41100452566409806}, {"from": "agent_3", "title": "Similarity: 0.45", "to": "agent_10", "width": 0.4508514475959883}, {"from": "agent_4", "title": "Similarity: 0.62", "to": "agent_5", "width": 0.6188958593661169}, {"from": "agent_4", "title": "Similarity: 0.50", "to": "agent_6", "width": 0.4972238888019646}, {"from": "agent_4", "title": "Similarity: 0.46", "to": "agent_7", "width": 0.45910367743097524}, {"from": "agent_4", "title": "Similarity: 0.45", "to": "agent_8", "width": 0.4540043177363994}, {"from": "agent_4", "title": "Similarity: 0.38", "to": "agent_9", "width": 0.3812867182662715}, {"from": "agent_4", "title": "Similarity: 0.41", "to": "agent_10", "width": 0.40805381425467513}, {"from": "agent_5", "title": "Similarity: 0.55", "to": "agent_6", "width": 0.554100262199849}, {"from": "agent_5", "title": "Similarity: 0.49", "to": "agent_7", "width": 0.4912482928238098}, {"from": "agent_5", "title": "Similarity: 0.61", "to": "agent_8", "width": 0.6107008176678338}, {"from": "agent_5", "title": "Similarity: 0.51", "to": "agent_9", "width": 0.5088768848553821}, {"from": "agent_5", "title": "Similarity: 0.61", "to": "agent_10", "width": 0.6144920850438836}, {"from": "agent_6", "title": "Similarity: 0.54", "to": "agent_7", "width": 0.5386417597733126}, {"from": "agent_6", "title": "Similarity: 0.48", "to": "agent_8", "width": 0.484016254950386}, {"from": "agent_6", "title": "Similarity: 0.51", "to": "agent_9", "width": 0.5094107154510242}, {"from": "agent_6", "title": "Similarity: 0.44", "to": "agent_10", "width": 0.43898546837620855}, {"from": "agent_7", "title": "Similarity: 0.55", "to": "agent_8", "width": 0.5452682527119668}, {"from": "agent_7", "title": "Similarity: 0.70", "to": "agent_9", "width": 0.7009813147763109}, {"from": "agent_7", "title": "Similarity: 0.63", "to": "agent_10", "width": 0.6298209521844862}, {"from": "agent_8", "title": "Similarity: 0.63", "to": "agent_9", "width": 0.6300974852808826}, {"from": "agent_8", "title": "Similarity: 0.60", "to": "agent_10", "width": 0.5962050601672209}, {"from": "agent_9", "title": "Similarity: 0.66", "to": "agent_10", "width": 0.6573080016391215}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"nodes": {"borderWidth": 1, "borderWidthSelected": 2, "font": {"size": 16, "face": "arial"}}, "edges": {"color": {"inherit": true}, "smooth": {"type": "continuous"}}, "physics": {"barnesHut": {"gravitationalConstant": -5000, "centralGravity": 0.1, "springLength": 150, "springConstant": 0.01, "damping": 0.09}, "minVelocity": 0.75}, "interaction": {"hover": true, "tooltipDelay": 200}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
