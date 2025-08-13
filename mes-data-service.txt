@@ -1,0 +1,98 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, interval, switchMap, startWith } from 'rxjs';
+
+interface ProductionPart {
+  part_id: string;
+  type: string;
+  production_date: string;
+  status: 'OK' | 'FAULT';
+  test_results: string;
+}
+
+interface ProductionStats {
+  total_parts: number;
+  test_results: string;
+  total_errors: number;
+  components: string;
+  fault_rate: number;
+}
+
+interface ProductionStatus {
+  parts_produced: number;
+  production_rate: number;
+  started_at: string;
+  last_part_at: string;
+}
+
+interface SimulatorStatus {
+  running: boolean;
+  config: {
+    batch_size: number;
+    interval_seconds: number;
+    fault_rate: number;
+  };
+  stats: {
+    batches_completed: number;
+    total_parts_generated: number;
+    total_records_inserted: number;
+    start_time: string;
+    last_batch_time: string;
+    errors: number;
+  };
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MesDataService {
+  private apiUrl = 'http://localhost:8000/api';
+
+  constructor(private http: HttpClient) { }
+
+  // 控制模拟器
+  startSimulator(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/production/control/start`);
+  }
+
+  stopSimulator(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/production/control/stop`);
+  }
+
+  // 获取数据
+  getSimulatorStatus(): Observable<SimulatorStatus> {
+    return this.http.get<SimulatorStatus>(`${this.apiUrl}/simulator/status`);
+  }
+
+  getProductionStatus(): Observable<ProductionStatus> {
+    return this.http.get<ProductionStatus>(`${this.apiUrl}/production/status`);
+  }
+
+  getProductionStats(): Observable<ProductionStats> {
+    return this.http.get<ProductionStats>(`${this.apiUrl}/production/stats`);
+  }
+
+  getRecentProduction(limit: number = 20): Observable<ProductionPart[]> {
+    return this.http.get<ProductionPart[]>(`${this.apiUrl}/production/recent?limit=${limit}`);
+  }
+
+  // 实时数据流
+  getRealTimeStatus(intervalMs: number = 2000): Observable<ProductionStatus> {
+    return interval(intervalMs).pipe(
+      startWith(0),
+      switchMap(() => this.getProductionStatus())
+    );
+  }
+
+  getRealTimeStats(intervalMs: number = 5000): Observable<ProductionStats> {
+    return interval(intervalMs).pipe(
+      startWith(0),
+      switchMap(() => this.getProductionStats())
+    );
+  }
+
+  // 模拟操作
+  simulateProduction(count: number = 10000): Observable<any> {
+    return this.http.post(`${this.apiUrl}/production/simulate`, {count});
+  }
+}

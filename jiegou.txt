@@ -1,0 +1,22 @@
+all-integrator/
+├── all-integrator-src/            # Angular前端代码
+│   └── app/
+│       └── all-integrator/
+│           ├── all-integrator.component.ts   # 已有
+│           ├── all-integrator.component.html # 已有
+│           ├── all-integrator.component.scss # 已有
+│           └── services/
+│               └── mes-data.service.ts       # 新增Angular服务
+│
+├── all-integrator-backend/        # Python后端代码
+│   ├── database/
+│   │   └── mes_database.py        # 已有
+│   ├── simulator/
+│   │   ├── mes_data_generator.py  # 已有
+│   │   ├── mes_simulator.py       # 已有
+│   │   └── continuous_simulator.py # 已有
+│   └── api.py                     # 新增FastAPI主文件
+│
+├── all-integrator-scripts/        # 辅助脚本
+├── output/                        # 输出目录
+└── .env                           # 环境变量文件

@@ -1,0 +1,98 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MesDataService } from '../services/mes-data.service';
+import { Subscription } from 'rxjs';
+
+@Component({
+  selector: 'app-ali-integrator',
+  templateUrl: './ali-integrator.component.html',
+  styleUrls: ['./ali-integrator.component.scss']
+})
+export class AliIntegratorComponent implements OnInit, OnDestroy {
+  productionStopped = true;
+  partsProduced = 0;
+  productionRate = 0;
+  startedAt = 'Not Started';
+  lastPartAt = 'N/A';
+  
+  // 统计数据
+  totalParts = 0;
+  testResults = 'All Passed';
+  totalErrors = 0;
+  components = 'Assembly Line A';
+  faultRate = 0;
+
+  // 表格数据
+  displayedColumns = ['part_id', 'part_type', 'part_production_date', 'part_status', 'part_test_results'];
+  dataSource: ProductionPart[] = [];
+  
+  private dataSubscriptions: Subscription[] = [];
+
+  constructor(private mesDataService: MesDataService) {}
+
+  ngOnInit(): void {
+    this.loadInitialData();
+    
+    // 设置实时数据更新
+    this.dataSubscriptions.push(
+      this.mesDataService.getRealTimeStatus().subscribe(status => {
+        this.partsProduced = status.parts_produced;
+        this.productionRate = status.production_rate;
+        this.startedAt = status.started_at || 'Not Started';
+        this.lastPartAt = status.last_part_at || 'N/A';
+      })
+    );
+
+    this.dataSubscriptions.push(
+      this.mesDataService.getRealTimeStats(3000).subscribe(stats => {
+        this.totalParts = stats.total_parts;
+        this.testResults = stats.test_results;
+        this.totalErrors = stats.total_errors;
+        this.faultRate = stats.fault_rate;
+      })
+    );
+
+    this.dataSubscriptions.push(
+      this.mesDataService.getSimulatorStatus().subscribe(status => {
+        this.productionStopped = !status.running;
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.dataSubscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  loadInitialData(): void {
+    this.mesDataService.getRecentProduction().subscribe(parts => {
+      this.dataSource = parts;
+    });
+  }
+
+  startProduction(): void {
+    if (!this.productionStopped) return;
+    
+    this.mesDataService.startSimulator().subscribe(() => {
+      this.productionStopped = false;
+      this.startedAt = new Date().toISOString();
+    });
+  }
+
+  stopProduction(): void {
+    if (this.productionStopped) return;
+    
+    this.mesDataService.stopSimulator().subscribe(() => {
+      this.productionStopped = true;
+    });
+  }
+
+  simulateParts(): void {
+    this.mesDataService.simulateProduction(10000).subscribe(() => {
+      // 模拟完成后刷新数据
+      this.loadInitialData();
+    });
+  }
+
+  refreshNow(): void {
+    this.loadInitialData();
+  }
+}
