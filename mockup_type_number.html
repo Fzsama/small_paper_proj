@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TypeNumber Dropdown Mockup (Pagination)</title>
+<style>
+  :root{ --bosch-red:#E20015; --bosch-dark:#2E2E2E; --bosch-mid:#6B7280; --bosch-blue:#007BC0; --radius:12px; }
+  body{margin:0; font-family: Arial, Helvetica, sans-serif; color:var(--bosch-dark); background:#ffffff;}
+  .page{max-width:920px; margin:48px auto; padding:0 24px;}
+  .card{border:1px solid #e5e7eb; border-radius:var(--radius); box-shadow:0 2px 12px rgba(0,0,0,0.06);} 
+  .card-header{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid #e5e7eb; background:linear-gradient(#fff,#fafafa);} 
+  .card-title{font-size:16px; font-weight:700;}
+  .input-row{display:flex; gap:8px; padding:16px; position:relative;}
+  .input{position:relative; width:40ch;}
+  .input input{width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; font-size:14px;}
+  .input input:focus{outline:2px solid #cfe8f8; border-color:#9ccff0;}
+
+  .panel{position:absolute; top:46px; left:0; z-index:10; background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 12px 32px rgba(0,0,0,0.12); width:100%;} 
+  .table-wrap{max-height:300px; overflow:auto;}
+  table{width:100%; border-collapse:separate; border-spacing:0; font-size:13px;}
+  thead th{position:sticky; top:0; background:#fafafa; text-align:left; padding:10px 12px; border-bottom:1px solid #e5e7eb; font-weight:700; cursor:pointer; user-select:none;}
+  thead th .arrow{margin-left:6px; opacity:.55;}
+  tbody td{padding:10px 12px; border-bottom:1px solid #f3f4f6;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:#fbfdff;} 
+
+  .footer{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px; background:#fcfcfd; border-top:1px solid #f0f0f0;}
+  .pager{display:flex; align-items:center; gap:6px;}
+  .pager button{border:1px solid #e5e7eb; background:#fff; padding:6px 10px; border-radius:8px; cursor:pointer;}
+  .pager button[disabled]{opacity:.45; cursor:not-allowed;}
+  .pager .active{background:#007BC0; color:#fff;}
+  .jump{display:flex; align-items:center; gap:6px; font-size:12px; color:#4b5563;}
+  .jump input{width:6ch; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;}
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Select Product TypeNumber</div>
+      </div>
+
+      <div class="input-row">
+        <div class="input">
+          <input id="search" maxlength="18" placeholder="Enter TypeNumber" />
+
+          <div id="panel" class="panel" style="display:none;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-key="typenumber">TypeNumber <span class="arrow">↕</span></th>
+                    <th data-key="uidCount">PartCount <span class="arrow">↕</span></th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+            <div class="footer">
+              <div class="pager">
+                <button id="prev">‹</button>
+                <div id="pager"></div>
+                <button id="next">›</button>
+              </div>
+              <div class="jump">
+                Page <input id="pageInput" type="number" min="1" value="1"/> / <span id="totalPages">1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+const BASE = [
+  {typenumber:"0124-580-110", uidCount: 13540},
+  {typenumber:"0124-580-121", uidCount: 12004},
+  {typenumber:"0124-580-132", uidCount: 8743},
+  {typenumber:"0124-580-145", uidCount: 6930},
+  {typenumber:"0260-800-301", uidCount: 12453},
+  {typenumber:"0260-800-302", uidCount: 11872},
+  {typenumber:"0260-800-315", uidCount: 9123},
+  {typenumber:"0260-800-329", uidCount: 6032},
+  {typenumber:"0260-800-342", uidCount: 10091},
+  {typenumber:"0269-011-213", uidCount: 2103},
+  {typenumber:"0269-013-249", uidCount: 1506},
+  {typenumber:"0119-580-908", uidCount: 987},
+  {typenumber:"0119-580-918", uidCount: 864},
+  {typenumber:"0410-121-3A1", uidCount: 45210},
+  {typenumber:"0410-132-1B2", uidCount: 49876},
+  {typenumber:"0412-109-7C3", uidCount: 6309},
+  {typenumber:"0412-139-9D4", uidCount: 5580},
+  {typenumber:"0507-193-8E5", uidCount: 3821}
+];
+const DATA = BASE.concat(BASE.map(x=>({...x, typenumber:x.typenumber+"-X"}))).concat(BASE.map(x=>({...x, typenumber:x.typenumber+"-Y"})));
+
+let state = { pageSize: 10, page: 1, query:'', sortKey:'typenumber', sortDir:'asc' };
+const tbody = document.getElementById('tbody');
+const pager = document.getElementById('pager');
+const panel = document.getElementById('panel');
+const search = document.getElementById('search');
+const pageInput = document.getElementById('pageInput');
+const totalPagesEl = document.getElementById('totalPages');
+
+function filtered(){
+  const q = state.query.toLowerCase();
+  return DATA.filter(r => r.typenumber.toLowerCase().includes(q));
+}
+
+function sortAll(arr){
+  return arr.sort((a,b)=>{
+    let va=a[state.sortKey], vb=b[state.sortKey];
+    if(state.sortKey==='uidCount'){ va=Number(va); vb=Number(vb); }
+    if(va<vb) return state.sortDir==='asc'?-1:1;
+    if(va>vb) return state.sortDir==='asc'? 1:-1;
+    return 0;
+  });
+}
+
+function render(){
+  const arr = sortAll(filtered());
+  const total = arr.length;
+  const pages = Math.max(1, Math.ceil(total/state.pageSize));
+  if(state.page>pages) state.page=pages;
+  if(state.page<1) state.page=1;
+  const start = (state.page-1)*state.pageSize;
+  const end = Math.min(total, start+state.pageSize);
+  const view = arr.slice(start,end);
+
+  tbody.innerHTML = view.map(r=>`<tr data-typenumber="${r.typenumber}"><td>${r.typenumber}</td><td>${r.uidCount.toLocaleString()}</td></tr>`).join('');
+
+  for(const tr of tbody.querySelectorAll('tr')){
+    tr.addEventListener('click', ()=>{ search.value = tr.getAttribute('data-typenumber'); state.query = search.value; closePanel(); });
+  }
+
+  pager.innerHTML='';
+  const btn = (label, disabled, onClick, active=false)=>{const b=document.createElement('button'); b.textContent=label; if(disabled) b.disabled=true; if(active) b.classList.add('active'); b.onclick=onClick; pager.appendChild(b);};
+  const pagesAround = [state.page-1, state.page, state.page+1].filter(p=>p>=1 && p<=pages);
+  pagesAround.forEach(p=>btn(String(p), false, ()=>{state.page=p; render();}, p===state.page));
+
+  totalPagesEl.textContent = pages; pageInput.value = state.page;
+}
+
+function openPanel(){ panel.style.display='block'; render(); }
+function closePanel(){ panel.style.display='none'; }
+
+search.addEventListener('focus', openPanel);
+search.addEventListener('input', (e)=>{ state.query=e.target.value; state.page=1; render(); });
+
+window.addEventListener('click', (e)=>{ if(!e.target.closest('.panel') && !e.target.closest('.input')) closePanel(); });
+window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePanel(); });
+
+function clampPage(p){const pages=Math.max(1, Math.ceil(filtered().length/state.pageSize)); return Math.min(Math.max(1,p), pages);}
+
+document.getElementById('prev').onclick=()=>{state.page=clampPage(state.page-1); render();};
+document.getElementById('next').onclick=()=>{state.page=clampPage(state.page+1); render();};
+pageInput.addEventListener('change', ()=>{state.page = clampPage(parseInt(pageInput.value||'1',10)); render();});
+
+for(const th of document.querySelectorAll('thead th')){
+  th.addEventListener('click', ()=>{
+    const key = th.getAttribute('data-key');
+    if(!key) return;
+    if(state.sortKey===key){ state.sortDir = (state.sortDir==='asc'?'desc':'asc'); }
+    else { state.sortKey = key; state.sortDir = 'asc'; }
+    state.page = 1;
+    render();
+  });
+}
+</script>
+</body>
+</html>
