@@ -1,0 +1,49 @@
+vm-cos-system/
+├── app.py                 # 主应用文件
+├── .env                   #环境变量配置
+├── requirements.txt       #依赖
+├── assessts/              #静态资源
+│   ├── fonts/
+│   ├── img/
+│   ├── sass/
+│   ├── ···
+│   └──style.css
+├── callbacks/             # 功能回调
+│   ├── __init__.py
+│   ├── main_callbacks.py  #主回调，控制页面默认跳转
+│   ├── wt_callbacks_m_p_add_.py  #功能回调，系统功能实现逻辑
+│   └── wt_callbacks_m_p_add_last_stable_version.py  #可回退的上一稳定版本
+├── config/         # 配置文件目录
+│   ├── columns_wt_cos.json   #预定义的查询结果列名
+│   ├── database.env          #查询数据库链接信息定义
+│   └── result_state.json     #数据状态转换规则
+├── history_list/          # 历史记录存储目录
+│   └── history.json
+├── layouts/            # 前端组件
+│   ├── main/
+│     ├── __init__.py
+│     ├── content.py   #页面容器
+│     ├── navbar.py    #页面顶端博世红标
+│     ├── page_no_found.py  #未找到页面
+│     ├── sidebar.py   # 侧边导航
+│     └── topbar.py   #顶部组件
+│   ├── widetable/
+│     ├── __init__.py
+│     ├── data_table.py #数据预览区域
+│     ├──download_history.py  #历史数据呈现区域
+│     ├──search_from_m_p_add_.py #检索条件设置区域
+│     └── search_form_m_p_add_last_stable_version.py #检索条件设置区域可回退稳定版本
+│   └── __init__.py
+├── models/            # 数据模型定义
+│   ├── __init__.py
+│   ├── loction_process.py   #产品位置转换
+│   └── orm_wt.py            #数据检索所需数据表结构定义
+├── process_confirm_record/   # 用户历史偏好记录以及权限信息数据库（SQLite）
+│   └── user_selections.db   #数据库文件
+├── search_time/              #自定义页面
+│   └── 500.html
+├── views/                   #前端组件组合
+│   ├── __init__.py
+│   ├── login_azure.py      #Azure AD SSO登录配置
+│   └── widepage.py         #前端页面组件组合
+└── widetable_pkl/           #查询结果PKL文件存储
