@@ -1,0 +1,439 @@
+1、系统主流程
+
+当前系统的主任务流程如下：
+
+1、系统开始运行，进行Azure AD SSO登录；
+
+2、验证登录进入到系统的主界面；未成功验证登录则进入登录失败页面；
+
+ 3、在主页面中首先设置查询参数，包括日期选择，Type_number选择，Location选择；然后用户可以点击设置按钮进入preference_setting页面，自主设置最终呈现的参数（仅对ADMIN用户开放操作权限，普通用户仅可查看），preference_setting页面中主要有4部分构成，包括PorcessData 、RelatedInfo、Not Include Character以及Other Preference Setting部分，对于ADMIN用户，可以调整转移PorcessData 、RelatedInfo、Not Include Character3者中的Item和设置Other Preference Setting中的具体选项，共有3个，其中Tolerance Included (Default: Included)默认选择，还有Unit Included (Default Not Included)和Auto Filter no data record (Default No Auto Fliter)，完成选择后点击Save按钮保存，同一用户在同一Type Number的情况下再次打开该页面会自动加载上次的操作记录，用户还可以手动更新Preference Setting，会在历史记录数据库中删除掉当前用户在当前Type NUmber下的全部记录，这些操作仅针对ADMIN用户，普通用户只能查看，不能操作；
+
+4、在设置完全部查询参数后，将会显示预计查询耗时，点击APPLY按钮进行结果查找，查询完成过后展示命中结果数据量，实际查询耗时和查询状态（查询完毕/查询失败），当前的查询结果在第5点中展示外，还会将查询得到的DataFrame保存为.pkl文件存储到“./widetable_pkl”文件夹中（供历史结果的预览和下载），并且会在“./history_list”的“history.json”文件中记录当前查询任务的记录；
+
+ 5、查询结果的预览会在Data_table部分呈现（前10条），该部分提供下载按钮供用户点击下载查询结果，Excel形式在浏览器中下载，当前的查询结果的预览和Excel导出的数据均来自保存在内存中的Dataframe；
+
+6、结果完成查询的同时会在历史记录记录部分展示查询历史，以表格形式展现，包含文件名、任务时间、任务状态，任务日志和操作选项（包含结果预览，文件下载和记录删除），操作选项中的结果预览点击后将历史结果的前10条记录放到Data_table部分呈现，点击下载会将历史Excel文件进行提取放到浏览器中下载（数据源于“./widetable_pkl”文件夹中对应的.pkl文件），点击删除历史记录会将当前的历史记录删除（删除掉history.json文件中的对应记录和“./widetable_pkl”文件夹中对应的.pkl文件）。
+
+ 7、在下载的Excel中的原始数据文件列中以链接的形式呈现，用户点击链接则触发原始数据文件的下载，在数据库中获取到BOLB文件，提取出来给予对应的文件名，在浏览器中提供下载；
+
+下图中使用红色框标注的部分是潜在的长耗时任务，有些Type Number的数据量较大，对应的PARAM_NAME的数量也会十分巨大，这将导致这些任务的时间花费较长，并且这些任务具有关联关系，数据量较大导致数据的查询时间变长，然后也会导致当前查询结果的时间花费更长，进一步导致历史结果的预览加载和结果下载的时间变长。
+
+【上面提到的红框里圈出的任务是需要进入任务队列的，两种方式：当前任务进行中，完全阻塞其他任务，提示用户当前有任务正在进行中；将任务放入队列，后台依次进行，任务完成时候通过轮询判断任务是否已经完成，允许用户在任务队列中任务进行过程中进行其他操作】
+{
+@startuml
+title VM-COS系统任务流程图
+
+start
+:系统开始运行;
+:进行Azure AD SSO登录;
+
+if (登录验证成功?) then (是)
+  :进入系统主界面;
+  
+  :设置查询参数:
+  1. 日期选择
+  2. Type_number选择
+  3. Location选择;
+  
+  if (用户点击设置按钮?) then (是)
+    if (用户类型 == ADMIN?) then (是)
+      :进入preference_setting页面;
+      
+      :调整设置:
+      - ProcessData
+      - RelatedInfo  
+      - Not Include Character
+      - Other Preference Setting;
+      
+      :点击Save按钮保存;
+      :保存到历史记录数据库;
+      :返回主界面;
+    else (否)
+      :进入preference_setting页面;
+      :仅可查看偏好设置;
+      :返回主界面;
+    endif
+  else (否)
+    :使用默认偏好设置;
+  endif
+  
+  :显示预计查询耗时;
+  :点击APPLY按钮;
+  
+  :执行查询操作;
+  
+  if (查询成功?) then (是)
+    :展示命中结果数据量;
+    :展示实际查询耗时;
+    :展示查询状态(查询完毕);
+    
+    :保存DataFrame为.pkl文件
+    (路径: ./widetable_pkl);
+    
+    :记录查询任务到history.json
+    (路径: ./history_list);
+    
+    :在Data_table展示前10条结果;
+    :在历史记录部分展示查询历史;
+    
+    :提供操作选项:
+    1. 结果预览
+    2. 文件下载
+    3. 记录删除;
+    
+    stop
+  else (否)
+    :展示查询状态(查询失败);
+    stop
+  endif
+  
+else (否)
+  :进入登录失败页面;
+  stop
+endif
+
+@enduml
+}
+2、系统用例
+{
+@startuml
+title VM-COS系统用例图
+
+left to right direction
+
+actor "Azure AD" as azure
+actor "普通用户" as user
+actor "ADMIN用户" as admin
+
+rectangle "VM-COS系统" {
+  usecase "系统登录" as login
+  usecase "查看主界面" as main_view
+  usecase "设置查询参数" as set_params
+  usecase "查看偏好设置" as view_prefs
+  usecase "修改偏好设置" as modify_prefs
+  usecase "执行数据查询" as execute_query
+  usecase "查看查询结果" as view_results
+  usecase "下载查询结果" as download_results
+  usecase "查看历史记录" as view_history
+  usecase "预览历史结果" as preview_history
+  usecase "下载历史文件" as download_history
+  usecase "删除历史记录" as delete_history
+  usecase "下载原始数据文件" as download_raw
+}
+
+azure --> login
+user --> login
+user --> main_view
+user --> set_params
+user --> view_prefs
+user --> execute_query
+user --> view_results
+user --> download_results
+user --> view_history
+user --> preview_history
+user --> download_history
+
+admin --> user
+admin --> modify_prefs
+admin --> delete_history
+
+' 关联关系
+login .> main_view : <<include>>
+set_params .> execute_query : <<include>>
+execute_query .> view_results : <<include>>
+view_history .> preview_history : <<extend>>
+view_history .> download_history : <<extend>>
+view_history .> delete_history : <<extend>>
+download_results .> download_raw : <<include>>
+
+@enduml
+}
+2.1系统参与者
+
+Azure AD，普通用户和ADMIN用户，Azure AD负责提供SSO的认证服务，普通用户和ADMIN用户通过系统登录并访问系统主页面。
+
+2.2 用例关系
+
+包含关系：
+
+系统登录后必须进入主页面；
+设置查询参数后执行查询；
+查询完成后一定展示预览结果
+
+扩展关系：
+
+查看历史记录的时候可以选择预览具体的结果；
+查看历史记录的时候可以选择下载历史文件；
+查看历史记录可以选择删除历史记录；
+下载Excel文件可以选择是否下载原始数据文件；
+2.3 权限划分
+
+普通用户权限
+
+基础操作：登录、查看主界面、设置参数
+查询功能：执行查询、查看结果、下载Excel结果
+历史记录：查看、预览、下载、删除历史记录
+只读权限：偏好设置（无法修改）
+
+ADMIN用户额外权限
+
+修改配置偏好
+
+高级ADMIN用户额外权限
+
+用户权限配置
+
+
+
+
+3、主要功能时序图
+3.1登录与主界面时序
+{
+@startuml
+title VM-COS系统登录和主界面时序图
+
+actor 用户 as User
+participant "前端界面" as Frontend
+participant "Azure AD" as AzureAD
+participant "认证服务" as AuthService
+participant "主界面控制器" as MainController
+
+User -> Frontend: 访问系统
+Frontend -> AzureAD: 发起SSO登录请求
+AzureAD -> User: 返回登录页面
+User -> AzureAD: 输入凭据登录
+AzureAD -> AuthService: 验证凭据并返回令牌
+AuthService -> Frontend: 返回认证结果
+
+alt 认证成功
+  Frontend -> MainController: 加载主界面
+  MainController -> Frontend: 返回主界面组件
+  Frontend -> User: 显示主界面\n(参数设置区域)
+else 认证失败
+  Frontend -> User: 显示登录失败页面
+end
+
+@enduml
+}
+
+用户发起访问：用户通过浏览器或其他客户端访问 VM-COS 系统。
+
+前端发起登录请求：前端界面接收到用户的访问请求后，自动向 Azure AD（Azure Active Directory）发起单点登录（SSO）请求。
+
+返回登录页面：Azure AD 接收到登录请求后，将标准的登录页面返回给用户。
+
+用户输入凭据：用户在登录页面中输入自己的账号和密码等认证凭据，并提交登录。
+
+验证凭据并获取令牌：Azure AD 验证用户提供的凭据。验证通过后，Azure AD 将认证信息发送给系统内部的认证服务（AuthService），由其进一步处理并生成访问令牌。
+
+返回认证结果：认证服务完成验证后，向前端界面返回认证成功或失败的结果。
+
+判断认证结果并分支处理：
+
+如果认证成功： a. 前端界面通知主界面控制器（MainController）加载主界面。 b. 主界面控制器处理请求，返回主界面所需的组件或数据。 c. 前端界面将完整的主界面（包含参数设置区域）展示给用户。
+如果认证失败： a. 前端界面直接向用户显示“登录失败”页面，提示用户重新登录
+
+3.2 偏好设置时序图
+{
+@startuml
+title 偏好设置时序图
+
+actor 用户 as User
+participant "前端界面" as Frontend
+participant "偏好设置控制器" as PrefController
+participant "权限验证服务" as AuthService
+participant "数据库服务" as DBService
+
+User -> Frontend: 点击设置按钮
+Frontend -> AuthService: 验证用户权限
+AuthService -> Frontend: 返回用户类型(ADMIN/普通用户)
+
+alt ADMIN用户
+  Frontend -> PrefController: 加载偏好设置页面
+  PrefController -> DBService: 查询历史设置记录\n(按用户ID和Type Number)
+  DBService -> PrefController: 返回历史设置
+  PrefController -> Frontend: 返回可编辑的偏好设置界面
+  Frontend -> User: 显示可编辑的偏好设置界面
+  
+  User -> Frontend: 修改设置并点击Save
+  Frontend -> PrefController: 提交设置数据
+  PrefController -> DBService: 保存设置到数据库
+  DBService -> PrefController: 返回保存结果
+  PrefController -> Frontend: 返回保存成功
+  Frontend -> User: 显示保存成功提示
+  
+else 普通用户
+  Frontend -> PrefController: 加载偏好设置页面
+  PrefController -> Frontend: 返回只读的偏好设置界面
+  Frontend -> User: 显示只读的偏好设置界面
+end
+
+@enduml
+}
+
+用户点击设置：用户在系统界面中点击“设置”按钮，意图查看或修改个人偏好设置。
+
+前端发起权限验证：前端界面接收到用户的操作后，向权限验证服务（AuthService）发送请求，以验证当前用户的访问权限。
+
+返回用户类型：权限验证服务根据用户身份信息，判断其用户类型（如管理员 ADMIN 或普通用户），并将结果返回给前端界面。
+
+根据用户类型进行分支处理：
+
+             如果用户是管理员（ADMIN）：
+
+ a. 前端界面请求偏好设置控制器（PrefController）加载偏好设置页面。
+
+ b. 偏好设置控制器调用数据库服务（DBService），根据当前用户的 ID 和类型编号（Type Number）查询历史设置记录。
+
+c. 数据库服务返回查询到的历史设置数据。 d. 偏好设置控制器将数据封装后，向前端返回一个可编辑的偏好设置界面。
+
+e. 前端将该可编辑界面展示给用户。
+
+ f. 用户修改偏好设置后，点击“Save”按钮提交更改。
+
+ g. 前端将修改后的设置数据发送给偏好设置控制器。
+
+ h. 偏好设置控制器将新设置保存到数据库服务中。
+
+i. 数据库服务返回保存成功或失败的结果。
+
+ j. 偏好设置控制器向前端返回“保存成功”响应。
+
+ k. 前端向用户显示“保存成功”的提示信息。
+
+             如果用户是普通用户：
+
+ a. 前端界面请求偏好设置控制器加载偏好设置页面。
+
+ b. 偏好设置控制器直接向前端返回一个只读的偏好设置界面（无需查询数据库历史记录）。
+
+ c. 前端将该只读界面展示给用户，用户只能查看而无法修改设置。
+
+
+
+
+3.3 数据查询与结果展示时序
+{
+@startuml
+title 数据查询和结果展示时序图
+
+actor 用户 as User
+participant "前端界面" as Frontend
+participant "查询控制器" as QueryController
+participant "数据查询服务" as QueryService
+participant "文件存储服务" as FileService
+participant "历史记录服务" as HistoryService
+
+User -> Frontend: 设置查询参数并点击APPLY
+Frontend -> QueryController: 提交查询请求
+QueryController -> QueryService: 执行数据查询
+QueryService -> QueryController: 返回查询结果DataFrame
+
+QueryController -> FileService: 保存DataFrame为.pkl文件
+FileService -> QueryController: 返回文件保存结果
+
+QueryController -> HistoryService: 记录查询任务到history.json
+HistoryService -> QueryController: 返回记录结果
+
+QueryController -> Frontend: 返回查询结果\n(数据量、耗时、状态)
+Frontend -> User: 展示查询结果摘要
+
+Frontend -> Frontend: 在Data_table展示前10条数据
+Frontend -> User: 提供下载按钮
+
+@enduml
+}
+
+用户发起查询：用户在前端界面设置好所需的查询参数，并点击“APPLY”按钮提交查询请求。
+
+前端转发请求：前端界面接收用户的操作，将查询请求转发给查询控制器（QueryController）。
+
+执行数据查询：查询控制器调用数据查询服务（QueryService）来执行实际的数据检索操作。
+
+返回查询结果：数据查询服务完成查询后，将结果以 DataFrame 的形式返回给查询控制器。
+
+保存查询结果文件：查询控制器将返回的 DataFrame 数据委托给文件存储服务（FileService），要求将其保存为 .pkl（Pickle）格式的文件。
+
+确认文件保存结果：文件存储服务完成文件保存操作后，向前端控制器返回保存成功或失败的结果。
+
+记录查询历史：查询控制器同时调用历史记录服务（HistoryService），将本次查询任务的相关信息（如参数、时间等）记录到 history.json 文件中。
+
+确认历史记录结果：历史记录服务完成写入操作后，向查询控制器返回记录结果。
+
+返回查询摘要信息：查询控制器将查询结果的摘要信息（包括数据量、查询耗时、执行状态等）返回给前端界面。
+
+展示查询结果摘要：前端界面将查询摘要信息展示给用户，使其快速了解本次查询的基本情况。
+
+展示部分数据：前端界面在“Data_table”组件中展示查询结果的前10条数据，方便用户预览。
+
+提供下载功能：前端界面为用户提供下载按钮，允许用户下载完整的查询结果文件（Excel文件）
+
+
+
+
+3.4 历史记录操作时序
+{
+@startuml
+title 历史记录操作时序图
+
+actor 用户 as User
+participant "前端界面" as Frontend
+participant "历史记录控制器" as HistoryController
+participant "文件存储服务" as FileService
+participant "数据库服务" as DBService
+
+User -> Frontend: 查看历史记录
+Frontend -> HistoryController: 获取历史记录列表
+HistoryController -> DBService: 查询history.json
+DBService -> HistoryController: 返回历史记录数据
+HistoryController -> Frontend: 返回历史记录表格
+Frontend -> User: 显示历史记录表格
+
+alt 点击结果预览
+  User -> Frontend: 点击结果预览
+  Frontend -> HistoryController: 请求历史结果数据
+  HistoryController -> FileService: 读取对应的.pkl文件
+  FileService -> HistoryController: 返回DataFrame数据
+  HistoryController -> Frontend: 返回前10条记录
+  Frontend -> User: 在Data_table展示预览结果
+  
+else 点击文件下载
+  User -> Frontend: 点击文件下载
+  Frontend -> HistoryController: 请求生成Excel文件
+  HistoryController -> FileService: 读取.pkl文件并转换
+  FileService -> HistoryController: 返回Excel文件流
+  HistoryController -> Frontend: 返回文件下载
+  Frontend -> User: 浏览器下载Excel文件
+  
+else 点击记录删除
+  User -> Frontend: 点击记录删除
+  Frontend -> HistoryController: 请求删除记录
+  HistoryController -> DBService: 从history.json删除记录
+  HistoryController -> FileService: 删除对应的.pkl文件
+  FileService -> HistoryController: 返回删除结果
+  HistoryController -> Frontend: 返回删除成功
+  Frontend -> User: 更新历史记录表格
+end
+
+@enduml
+}
+
+用户请求查看历史记录：用户在前端界面点击“查看历史记录”功能，希望浏览之前执行过的查询任务。
+
+前端请求历史列表：前端界面接收到用户操作后，向历史记录控制器（HistoryController）发送请求，获取历史记录列表。
+
+查询历史数据文件：历史记录控制器调用数据库服务（DBService）去读取存储历史记录的 history.json 文件。
+
+返回历史数据：数据库服务读取并解析 history.json 文件后，将历史记录数据返回给历史记录控制器。
+
+返回表格数据：历史记录控制器将获取到的历史记录数据整理为表格格式，并返回给前端界面。
+
+展示历史记录：前端界面将历史记录以表格形式展示给用户，便于查看。
+
+用户选择操作类型（条件分支）：
+
+情况一：点击“结果预览” a. 用户在历史记录表格中点击某条记录的“结果预览”按钮。 b. 前端向历史记录控制器请求该记录对应的查询结果数据。 c. 历史记录控制器调用文件存储服务（FileService），读取与该记录关联的 .pkl 文件。 d. 文件存储服务将读取到的 DataFrame 数据返回给控制器。 e. 历史记录控制器仅取前10条数据返回给前端。 f. 前端在 Data_table 中展示预览结果，供用户快速查看。
+
+情况二：点击“文件下载” a. 用户点击“文件下载”按钮，希望获取完整的历史查询结果。 b. 前端向历史记录控制器请求生成可下载的 Excel 文件。 c. 历史记录控制器调用文件存储服务，读取对应的 .pkl 文件，并将其转换为 Excel 格式。 d. 文件存储服务完成转换后，将 Excel 文件流返回给控制器。 e. 历史记录控制器将文件流返回给前端。 f. 前端触发浏览器的下载功能，用户将 Excel 文件保存到本地。
+
+情况三：点击“记录删除” a. 用户点击“记录删除”按钮，意图删除某条历史记录。 b. 前端向历史记录控制器发送删除请求。 c. 历史记录控制器首先调用数据库服务，从 history.json 文件中删除对应的记录。 d. 同时，控制器调用文件存储服务，删除与该记录关联的 .pkl 结果文件。 e. 文件存储服务返回文件删除结果。 f. 历史记录控制器向前端返回“删除成功”响应。 g. 前端刷新并更新历史记录表格，移除已删除的条目。
